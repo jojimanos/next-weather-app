@@ -35,9 +35,9 @@ function Navbar() {
           <div>
             <Searchbox
               value={city}
-              // onSubmit={HandleSubmit}
               onChange={(e) => setCity(e.target.value)}
               onClick={HandleSubmit}
+              className=""
             />
           </div>
         </section>

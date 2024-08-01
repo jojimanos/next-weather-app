@@ -7,11 +7,10 @@ type Props = {
   className: string;
   value: string;
   onChange: React.ChangeEventHandler<HTMLInputElement> | undefined;
-  onSubmit: React.FormEventHandler<HTMLFormElement> | undefined;
   onClick: React.MouseEventHandler<HTMLButtonElement> | undefined;
 };
 
-function Searchbox({ className, value, onChange, onSubmit, onClick }: Props) {
+function Searchbox({ className, value, onChange, onClick }: Props) {
   return (
     <div
       // onSubmit={onSubmit}

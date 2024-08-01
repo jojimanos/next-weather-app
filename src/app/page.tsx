@@ -45,14 +45,13 @@ export default function Home() {
     };
 
     fetchLocationData();
-
-
   }, [location]);
 
   const { isPending, error, data } = useQuery({
-    queryKey:  [location, locationData],
+    queryKey: [location, locationData],
     queryFn: async () => {
       const { data } = await axios.get(
+        //@ts-ignore next-line
         `https://api.open-meteo.com/v1/forecast?latitude=${locationData.lat}&longitude=${locationData.lng}&current=apparent_temperature,temperature_2m,surface_pressure,relative_humidity_2m,is_day,rain,snowfall,weather_code,wind_speed_10m,wind_direction_10m&hourly=surface_pressure,temperature_2m,rain,weather_code,visibility,relative_humidity_2m&daily=apparent_temperature_max,apparent_temperature_min,weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,wind_direction_10m_dominant,wind_speed_10m_max`
       );
       console.log("data", data);
@@ -87,7 +86,9 @@ export default function Home() {
             <Container className="gap-10 px-6 items-center">
               {/*Time and weather icon*/}
               <div className="flex flex-col px-4">
-                <span className="text-5xl">{data.current.temperature_2m}°C</span>
+                <span className="text-5xl">
+                  {data.current.temperature_2m}°C
+                </span>
                 <p className="text-xs space-x-1 whitespace-nowrap">
                   <span>Feels like</span>
                   <span>{data.current.apparent_temperature}°C</span>
@@ -108,7 +109,7 @@ export default function Home() {
                       {format(parseISO(h), "h:mm a")}
                     </p>
                     <p className="whitespace-nowrap">
-                      {`${data.hourly.temperature_2m[i]}°C`} 
+                      {`${data.hourly.temperature_2m[i]}°C`}
                     </p>
                     <p>
                       {/* <WeatherIcon iconName={"fa-solid fa-sun"} /> */}
@@ -153,6 +154,7 @@ export default function Home() {
         {/*7 day data*/}
         <section className="flex w-full flex-col gap-4 ">
           <p className="text-2xl">Forecast (7days)</p>
+          {/*@ts-ignore next-line*/}
           {data.daily.time.map((d, i) => (
             <ForecastWeatherDetail
               key={i}
@@ -174,17 +176,17 @@ export default function Home() {
               airPressure={`${(
                 data.hourly.surface_pressure
                   .slice(0 + i * 24, 24 + i * 24)
-                  .reduce((acc, curr) => acc + curr, 0) / 24
+                  .reduce((acc: number, curr: number) => acc + curr, 0) / 24
               ).toFixed(1)} hPa (mean)`}
               visibility={`${(
                 data.hourly.visibility
                   .slice(0 + i * 24, 24 + i * 24)
-                  .reduce((acc, curr) => acc + curr, 0) / 24000
+                  .reduce((acc: number, curr: number) => acc + curr, 0) / 24000
               ).toFixed()} km (mean)`}
               humidity={`${(
                 data.hourly.relative_humidity_2m
                   .slice(0 + i * 24, 24 + i * 24)
-                  .reduce((acc, curr) => acc + curr, 0) / 24
+                  .reduce((acc: number, curr: number) => acc + curr, 0) / 24
               ).toFixed(1)} % (mean)`}
               windSpeed={`${data.daily.wind_speed_10m_max[i]} km/h (max)`}
               windDirection={data.daily.wind_direction_10m_dominant[i]}
