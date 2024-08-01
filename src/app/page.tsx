@@ -28,7 +28,7 @@ export default function Home() {
     const fetchLocationData = async () => {
       try {
         const response = await fetch(
-          `http://localhost:3000/api/cities?location=${encodeURIComponent(
+          `api/cities?location=${encodeURIComponent(
             location.city
           )}`
         );
