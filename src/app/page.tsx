@@ -21,6 +21,9 @@ interface WeatherData {}
 export default function Home() {
   const [location, locationDispatch] = useContext(LocationContext);
   const [locationData, setLocationData] = useState();
+  const [currentHour, setCurrentHour] = useState<string>();
+  const [hourlyTimeArray, setHourlyTimeArray] = useState<string[]>();
+  const [currentTimeIndex, setCurrentTimeIndex] = useState<number>();
 
   useEffect(() => {
     if (!location.city) return;
@@ -28,9 +31,7 @@ export default function Home() {
     const fetchLocationData = async () => {
       try {
         const response = await fetch(
-          `api/cities?location=${encodeURIComponent(
-            location.city
-          )}`
+          `api/cities?location=${encodeURIComponent(location.city)}`
         );
         const data = await response.json();
         if (data && data.length > 0) {
@@ -52,9 +53,18 @@ export default function Home() {
     queryFn: async () => {
       const { data } = await axios.get(
         //@ts-ignore next-line
-        `https://api.open-meteo.com/v1/forecast?latitude=${locationData.lat}&longitude=${locationData.lng}&current=apparent_temperature,temperature_2m,surface_pressure,relative_humidity_2m,is_day,rain,snowfall,weather_code,wind_speed_10m,wind_direction_10m&hourly=surface_pressure,temperature_2m,rain,weather_code,visibility,relative_humidity_2m&daily=apparent_temperature_max,apparent_temperature_min,weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,wind_direction_10m_dominant,wind_speed_10m_max`
+        `https://api.open-meteo.com/v1/forecast?latitude=${locationData.lat}&longitude=${locationData.lng}&current=apparent_temperature,temperature_2m,surface_pressure,relative_humidity_2m,is_day,rain,snowfall,weather_code,wind_speed_10m,wind_direction_10m&hourly=surface_pressure,temperature_2m,rain,weather_code,visibility,relative_humidity_2m&daily=apparent_temperature_max,apparent_temperature_min,weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,wind_direction_10m_dominant,wind_speed_10m_max&timezone=auto`
       );
       console.log("data", data);
+      console.log("current Hour", format(parseISO(data.current.time), "H"));
+      setCurrentHour(format(parseISO(data.current.time), "H"));
+      setHourlyTimeArray(data.hourly.time);
+      setCurrentTimeIndex(
+        hourlyTimeArray?.findIndex(
+          (h) => format(parseISO(h), "H") === currentHour
+        )
+      );
+      console.log(currentHour);
       return data;
     },
   });
@@ -66,12 +76,24 @@ export default function Home() {
       </div>
     );
 
-  if (!locationData) return <div>Loading...</div>;
+  if (!locationData || !hourlyTimeArray) return <div>Loading...</div>;
 
   console.log("This is the location Data", locationData);
 
+  console.log(currentHour, hourlyTimeArray);
+
+  console.log("Here is the SLICE", data.daily.time.slice(1, 4));
+  // console.log(
+  // "Current Time Index",
+  // hourlyTimeArray.findIndex((h) => format(parseISO(h), "H") === currentHour), currentTimeIndex
+  // );
+
+  // console.log("SEE HERE", format(parseISO(hourlyTimeArray[6]), "H"));
   return (
-    <div className="flex flex-col gap-4 bg-gray-100 min-h-screen">
+    <div
+      id="top-of-the-app"
+      className="flex flex-col gap-4 bg-gray-100 min-h-screen"
+    >
       <Navbar />
       <main className="px-3 max-w-7xl mx-auto flex flex-col gap-9 w-full pb-10 pt-4">
         {/*Today data*/}
@@ -100,28 +122,37 @@ export default function Home() {
               </div>
               {/*time and weather icon*/}
               <div className="flex gap-10 sm:gap-16 overflow-x-auto w-full justify-between pr-3">
-                {data.hourly.time.slice(0, 25).map((h: string, i: number) => (
-                  <div
-                    key={i}
-                    className="flex flex-col justify-between gap-2 items-center text-sm font-semibold"
-                  >
-                    <p className="whitespace-nowrap">
-                      {format(parseISO(h), "h:mm a")}
-                    </p>
-                    <p className="whitespace-nowrap">
-                      {`${data.hourly.temperature_2m[i]}°C`}
-                    </p>
-                    <p>
-                      {/* <WeatherIcon iconName={"fa-solid fa-sun"} /> */}
-                      <WeatherIcon
-                        iconStats={weatherCodeIcon(
-                          data.hourly.weather_code[i],
-                          isDayOrNight(data.hourly.time[i])
-                        )}
-                      />
-                    </p>
-                  </div>
-                ))}
+                {data.hourly.time
+                  .slice(
+                    hourlyTimeArray.findIndex(
+                      (h) => format(parseISO(h), "H") === currentHour
+                    ),
+                    hourlyTimeArray.findIndex(
+                      (h) => format(parseISO(h), "H") === currentHour
+                    ) + 24
+                  )
+                  .map((h: string, i: number) => (
+                    <div
+                      key={i}
+                      className="flex flex-col justify-between gap-2 items-center text-sm font-semibold"
+                    >
+                      <p className="whitespace-nowrap">
+                        {format(parseISO(h), "h:mm a")}
+                      </p>
+                      <p className="whitespace-nowrap">
+                        {`${data.hourly.temperature_2m[i]}°C`}
+                      </p>
+                      <p>
+                        {/* <WeatherIcon iconName={"fa-solid fa-sun"} /> */}
+                        <WeatherIcon
+                          iconStats={weatherCodeIcon(
+                            data.hourly.weather_code[i],
+                            isDayOrNight(data.hourly.time[i])
+                          )}
+                        />
+                      </p>
+                    </div>
+                  ))}
               </div>
             </Container>
           </div>
@@ -155,24 +186,24 @@ export default function Home() {
         <section className="flex w-full flex-col gap-4 ">
           <p className="text-2xl">Forecast (7days)</p>
           {/*@ts-ignore next-line*/}
-          {data.daily.time.map((d, i) => (
+          {data.daily.time.slice(1).map((d, i) => (
             <ForecastWeatherDetail
               key={i}
-              weatherCode={data.daily.weather_code[i]}
-              date={format(parseISO(data.daily.time[i]), "dd.MM")}
-              day={format(parseISO(data.daily.time[i]), "EEEE")}
+              weatherCode={data.daily.weather_code[i+1]}
+              date={format(parseISO(data.daily.time[i+1]), "dd.MM")}
+              day={format(parseISO(data.daily.time[i+1]), "EEEE")}
               temp={(
-                (data.daily.temperature_2m_max[i] +
-                  data.daily.temperature_2m_min[i]) /
+                (data.daily.temperature_2m_max[i+1] +
+                  data.daily.temperature_2m_min[i+1]) /
                 2
               ).toFixed(1)}
               feels_like={(
-                (data.daily.apparent_temperature_max[i] +
-                  data.daily.apparent_temperature_min[i]) /
+                (data.daily.apparent_temperature_max[i+1] +
+                  data.daily.apparent_temperature_min[i+1]) /
                 2
               ).toFixed(1)}
-              temp_min={data.daily.temperature_2m_min[i]}
-              temp_max={data.daily.temperature_2m_max[i]}
+              temp_min={data.daily.temperature_2m_min[i+1]}
+              temp_max={data.daily.temperature_2m_max[i+1]}
               airPressure={`${(
                 data.hourly.surface_pressure
                   .slice(0 + i * 24, 24 + i * 24)
@@ -188,10 +219,10 @@ export default function Home() {
                   .slice(0 + i * 24, 24 + i * 24)
                   .reduce((acc: number, curr: number) => acc + curr, 0) / 24
               ).toFixed(1)} % (mean)`}
-              windSpeed={`${data.daily.wind_speed_10m_max[i]} km/h (max)`}
-              windDirection={data.daily.wind_direction_10m_dominant[i]}
-              sunrise={format(parseISO(data.daily.sunrise[i] ?? ""), "H:m")}
-              sunset={format(parseISO(data.daily.sunset[i] ?? ""), "H:m")}
+              windSpeed={`${data.daily.wind_speed_10m_max[i+1]} km/h (max)`}
+              windDirection={data.daily.wind_direction_10m_dominant[i+1]}
+              sunrise={format(parseISO(data.daily.sunrise[i+1] ?? ""), "H:m")}
+              sunset={format(parseISO(data.daily.sunset[i+1] ?? ""), "H:m")}
             />
           ))}
         </section>
