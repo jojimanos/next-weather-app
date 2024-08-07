@@ -17,6 +17,7 @@ function Searchbox({ className, value, onChange, onClick }: Props) {
       className={cn("flex relative items-center justify-center h-10", className)}
     >
       <input
+      value={value}
         onChange={onChange}
         type="text"
         placeholder="Search location..."

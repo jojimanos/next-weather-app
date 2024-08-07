@@ -36,7 +36,7 @@ export default function Home() {
         const data = await response.json();
         if (data && data.length > 0) {
           setLocationData(data[0]);
-          console.log("DATA", data[0], locationData);
+          // console.log("DATA", data[0], locationData);
         } else {
           console.error("Location data not found.");
         }
@@ -55,8 +55,8 @@ export default function Home() {
         //@ts-ignore next-line
         `https://api.open-meteo.com/v1/forecast?latitude=${locationData.lat}&longitude=${locationData.lng}&current=apparent_temperature,temperature_2m,surface_pressure,relative_humidity_2m,is_day,rain,snowfall,weather_code,wind_speed_10m,wind_direction_10m&hourly=surface_pressure,temperature_2m,rain,weather_code,visibility,relative_humidity_2m&daily=apparent_temperature_max,apparent_temperature_min,weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,wind_direction_10m_dominant,wind_speed_10m_max&timezone=auto`
       );
-      console.log("data", data);
-      console.log("current Hour", format(parseISO(data.current.time), "H"));
+      // console.log("data", data);
+      // console.log("current Hour", format(parseISO(data.current.time), "H"));
       setCurrentHour(format(parseISO(data.current.time), "H"));
       setHourlyTimeArray(data.hourly.time);
       setCurrentTimeIndex(
@@ -64,7 +64,7 @@ export default function Home() {
           (h) => format(parseISO(h), "H") === currentHour
         )
       );
-      console.log(currentHour);
+      // console.log(currentHour);
       return data;
     },
   });
@@ -78,17 +78,11 @@ export default function Home() {
 
   if (!locationData || !hourlyTimeArray) return <div>Loading...</div>;
 
-  console.log("This is the location Data", locationData);
+  // console.log("This is the location Data", locationData);
 
-  console.log(currentHour, hourlyTimeArray);
+  // console.log(currentHour, hourlyTimeArray);
 
-  console.log("Here is the SLICE", data.daily.time.slice(1, 4));
-  // console.log(
-  // "Current Time Index",
-  // hourlyTimeArray.findIndex((h) => format(parseISO(h), "H") === currentHour), currentTimeIndex
-  // );
-
-  // console.log("SEE HERE", format(parseISO(hourlyTimeArray[6]), "H"));
+  // console.log("Here is the SLICE", data.daily.time.slice(1, 4));
   return (
     <div
       id="top-of-the-app"
@@ -189,21 +183,21 @@ export default function Home() {
           {data.daily.time.slice(1).map((d, i) => (
             <ForecastWeatherDetail
               key={i}
-              weatherCode={data.daily.weather_code[i+1]}
-              date={format(parseISO(data.daily.time[i+1]), "dd.MM")}
-              day={format(parseISO(data.daily.time[i+1]), "EEEE")}
+              weatherCode={data.daily.weather_code[i + 1]}
+              date={format(parseISO(data.daily.time[i + 1]), "dd.MM")}
+              day={format(parseISO(data.daily.time[i + 1]), "EEEE")}
               temp={(
-                (data.daily.temperature_2m_max[i+1] +
-                  data.daily.temperature_2m_min[i+1]) /
+                (data.daily.temperature_2m_max[i + 1] +
+                  data.daily.temperature_2m_min[i + 1]) /
                 2
               ).toFixed(1)}
               feels_like={(
-                (data.daily.apparent_temperature_max[i+1] +
-                  data.daily.apparent_temperature_min[i+1]) /
+                (data.daily.apparent_temperature_max[i + 1] +
+                  data.daily.apparent_temperature_min[i + 1]) /
                 2
               ).toFixed(1)}
-              temp_min={data.daily.temperature_2m_min[i+1]}
-              temp_max={data.daily.temperature_2m_max[i+1]}
+              temp_min={data.daily.temperature_2m_min[i + 1]}
+              temp_max={data.daily.temperature_2m_max[i + 1]}
               airPressure={`${(
                 data.hourly.surface_pressure
                   .slice(0 + i * 24, 24 + i * 24)
@@ -219,10 +213,10 @@ export default function Home() {
                   .slice(0 + i * 24, 24 + i * 24)
                   .reduce((acc: number, curr: number) => acc + curr, 0) / 24
               ).toFixed(1)} % (mean)`}
-              windSpeed={`${data.daily.wind_speed_10m_max[i+1]} km/h (max)`}
-              windDirection={data.daily.wind_direction_10m_dominant[i+1]}
-              sunrise={format(parseISO(data.daily.sunrise[i+1] ?? ""), "H:m")}
-              sunset={format(parseISO(data.daily.sunset[i+1] ?? ""), "H:m")}
+              windSpeed={`${data.daily.wind_speed_10m_max[i + 1]} km/h (max)`}
+              windDirection={data.daily.wind_direction_10m_dominant[i + 1]}
+              sunrise={format(parseISO(data.daily.sunrise[i + 1] ?? ""), "H:m")}
+              sunset={format(parseISO(data.daily.sunset[i + 1] ?? ""), "H:m")}
             />
           ))}
         </section>
