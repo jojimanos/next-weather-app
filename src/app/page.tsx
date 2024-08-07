@@ -186,16 +186,10 @@ export default function Home() {
               weatherCode={data.daily.weather_code[i + 1]}
               date={format(parseISO(data.daily.time[i + 1]), "dd.MM")}
               day={format(parseISO(data.daily.time[i + 1]), "EEEE")}
-              temp={(
-                (data.daily.temperature_2m_max[i + 1] +
-                  data.daily.temperature_2m_min[i + 1]) /
-                2
-              ).toFixed(1)}
-              feels_like={(
-                (data.daily.apparent_temperature_max[i + 1] +
-                  data.daily.apparent_temperature_min[i + 1]) /
-                2
-              ).toFixed(1)}
+              maxTemp={data.daily.temperature_2m_max[i + 1]}
+              minTemp={data.daily.temperature_2m_min[i + 1]}
+              max_feels_like={data.daily.apparent_temperature_max[i + 1]}
+              min_feels_like={data.daily.apparent_temperature_min[i + 1]}
               temp_min={data.daily.temperature_2m_min[i + 1]}
               temp_max={data.daily.temperature_2m_max[i + 1]}
               airPressure={`${(

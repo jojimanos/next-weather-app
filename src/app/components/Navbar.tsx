@@ -121,7 +121,7 @@ function SuggestionBox({
   return (
     <>
       {((showSuggestions && suggestions.length >= 1) || errorMsg) && (
-        <ul className="mb-4 bg-white absolute border top-[44px] left-0 border-gray-300 rounded-md min-w-[200px] flex flex-col gap-1 py-2 px-2">
+        <ul className="mb-4 bg-white z-10 overflow-scroll max-h-screen absolute border top-[44px] left-0 border-gray-300 rounded-md min-w-[200px] flex flex-col gap-1 py-2 px-2">
           {errorMsg && suggestions.length < 1 && (
             <li className="text-red-500 p-1">{errorMsg}</li>
           )}
