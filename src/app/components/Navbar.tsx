@@ -23,6 +23,8 @@ function Navbar() {
   const [suggestions, setSuggestions] = useState<suggestionInterface[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
+  const [loadingCurrentLocation, setLoadingCurrentLocation] = useState(false);
+
   async function handleInputChange(value: string) {
     setCity(value);
     if (value.length >= 3) {
@@ -39,8 +41,40 @@ function Navbar() {
     }
   }
 
-  async function HandleSubmit() {
+  async function HandleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
     locationDispatch({ type: "NEWLOCATION", city: city });
+    locationDispatch({ type: "CURRENTLOCATION", longitude: "", latitude: "" });
+  }
+
+  function HandleCurrentLocation() {
+    if ("geolocation" in navigator) {
+      setLoadingCurrentLocation(true);
+      navigator.geolocation.getCurrentPosition(
+        (p) => {
+          console.log(p.coords.longitude, p.coords.latitude);
+          locationDispatch({
+            type: "CURRENTLOCATION",
+            longitude: p.coords.longitude,
+            latitude: p.coords.latitude,
+          });
+          console.log(location, loadingCurrentLocation);
+        },
+        (error) => {
+          console.log("There wa an error while finding location");
+          setLoadingCurrentLocation(false);
+        }
+      );
+      console.log("CLICKED");
+      // navigator.permissions.query({ name: "geolocation" }).then((result) => {
+      // if (result.state === "granted") {
+      // console.log("Permision Granted");
+      setLoadingCurrentLocation(true);
+      // } else if (result.state === "prompt") {
+      // setLoadingCurrentLocation(false);
+      // }
+      // });
+    }
   }
 
   function handleSuggestionClick(item: string) {
@@ -49,11 +83,6 @@ function Navbar() {
     console.log(city);
   }
 
-  function handleSubmitSearch(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-  }
-
-  // console.log(location);
   return (
     <>
       <nav className="shadow-sm sticky top-0 left-0 z-50 bg-white">
@@ -65,9 +94,27 @@ function Navbar() {
             </a>
           </p>
           <section className="flex gap-2 items-center">
-            <MdLocationSearching className="text-2xl text-gray-400 hover:opacity-80 cursor-pointer" />
-            <TiLocationOutline className="text-3xl" />
-            <p className="text-slate-900/80 text-sm">{location.city}</p>
+            <MdLocationSearching
+              title="Your current location"
+              onClick={HandleCurrentLocation}
+              className="text-2xl text-gray-400 hover:opacity-80 cursor-pointer"
+            />
+            {loadingCurrentLocation === true ? (
+              <div className="flex items-center min-h-screen justify-center">
+                <p className="animate-bounce">Loading...</p>
+              </div>
+            ) : null}
+            {location.longitude && location.latitude && (
+              <span>
+                {location.longitude.toFixed(2)} {location.latitude.toFixed(2)}
+              </span>
+            )}
+            {!location.longitude && !location.latitude && (
+              <>
+                <TiLocationOutline className="text-3xl" />
+                <p className="text-slate-900/80 text-sm">{location.city}</p>
+              </>
+            )}
             <div className="relative hidden md:flex">
               <Searchbox
                 value={city}

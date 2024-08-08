@@ -16,18 +16,21 @@ import { useContext, useEffect, useState } from "react";
 import LocationContext from "./locationContext";
 import { GET } from "./api/cities/route";
 
-interface WeatherData {}
+interface locationData {
+  _id: string;
+  lat: string;
+  lng: string;
+  country: string;
+}
 
 export default function Home() {
   const [location, locationDispatch] = useContext(LocationContext);
-  const [locationData, setLocationData] = useState();
+  const [locationData, setLocationData] = useState<locationData>();
   const [currentHour, setCurrentHour] = useState<string>();
   const [hourlyTimeArray, setHourlyTimeArray] = useState<string[]>();
-  const [currentTimeIndex, setCurrentTimeIndex] = useState<number>();
+  // const [currentTimeIndex, setCurrentTimeIndex] = useState<number>();
 
   useEffect(() => {
-    if (!location.city) return;
-
     const fetchLocationData = async () => {
       try {
         const response = await fetch(
@@ -36,7 +39,7 @@ export default function Home() {
         const data = await response.json();
         if (data && data.length > 0) {
           setLocationData(data[0]);
-          // console.log("DATA", data[0], locationData);
+          console.log("DATA", data[0], locationData);
         } else {
           console.error("Location data not found.");
         }
@@ -45,7 +48,21 @@ export default function Home() {
       }
     };
 
-    fetchLocationData();
+    if (
+      !location.city ||
+      location.longitude !== "" ||
+      location.latitude !== ""
+    ) {
+      // return;
+      setLocationData({
+        _id: "",
+        lat: location.latitude,
+        lng: location.longitude,
+        country: "",
+      });
+    } else {
+      fetchLocationData();
+    }
   }, [location]);
 
   const { isPending, error, data } = useQuery({
@@ -59,11 +76,11 @@ export default function Home() {
       // console.log("current Hour", format(parseISO(data.current.time), "H"));
       setCurrentHour(format(parseISO(data.current.time), "H"));
       setHourlyTimeArray(data.hourly.time);
-      setCurrentTimeIndex(
-        hourlyTimeArray?.findIndex(
-          (h) => format(parseISO(h), "H") === currentHour
-        )
-      );
+      // setCurrentTimeIndex(
+      // hourlyTimeArray?.findIndex(
+      // (h) => format(parseISO(h), "H") === currentHour
+      // )
+      // );
       // console.log(currentHour);
       return data;
     },
