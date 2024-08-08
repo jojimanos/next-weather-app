@@ -1,6 +1,12 @@
 "use-client";
 
-import React, { useContext, useEffect, useState } from "react";
+import React, {
+  SetStateAction,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { FaSun } from "react-icons/fa6";
 import { MdLocationSearching } from "react-icons/md";
 import { TiLocationOutline } from "react-icons/ti";
@@ -126,6 +132,7 @@ function Navbar() {
                 {...{
                   showSuggestions,
                   suggestions,
+                  setSuggestions,
                   handleSuggestionClick,
                   errorMsg,
                 }}
@@ -145,6 +152,7 @@ function Navbar() {
           <SuggestionBox
             showSuggestions={showSuggestions}
             suggestions={suggestions}
+            setSuggestions={setSuggestions}
             handleSuggestionClick={handleSuggestionClick}
             errorMsg={errorMsg}
           />
@@ -157,18 +165,39 @@ function Navbar() {
 function SuggestionBox({
   showSuggestions,
   suggestions,
+  setSuggestions,
   handleSuggestionClick,
   errorMsg,
 }: {
   showSuggestions: boolean;
   suggestions: suggestionInterface[];
+  setSuggestions: React.Dispatch<React.SetStateAction<suggestionInterface[]>>;
   handleSuggestionClick: (item: string) => void;
   errorMsg: string;
 }) {
+  const listReference = useRef<HTMLUListElement>(null);
+
+  useEffect(() => {
+    let handler = (e: any) => {
+      if (listReference.current && !listReference.current.contains(e.target as Node)) {
+        setSuggestions([]);
+      }
+    };
+
+    document.addEventListener("mousedown", handler);
+
+    return () => {
+      document.removeEventListener("mousedown", handler);
+    };
+  }, [listReference, suggestions]);
+
   return (
     <>
       {((showSuggestions && suggestions.length >= 1) || errorMsg) && (
-        <ul className="mb-4 bg-white z-10 overflow-scroll max-h-screen absolute border top-[44px] left-0 border-gray-300 rounded-md min-w-[200px] flex flex-col gap-1 py-2 px-2">
+        <ul
+          ref={listReference}
+          className="mb-4 bg-white z-10 overflow-scroll max-h-screen absolute border top-[44px] left-0 border-gray-300 rounded-md min-w-[200px] flex flex-col gap-1 py-2 px-2"
+        >
           {errorMsg && suggestions.length < 1 && (
             <li className="text-red-500 p-1">{errorMsg}</li>
           )}
