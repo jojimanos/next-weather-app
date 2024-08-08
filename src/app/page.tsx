@@ -28,7 +28,7 @@ export default function Home() {
   const [locationData, setLocationData] = useState<locationData>();
   const [currentHour, setCurrentHour] = useState<string>();
   const [hourlyTimeArray, setHourlyTimeArray] = useState<string[]>();
-  // const [currentTimeIndex, setCurrentTimeIndex] = useState<number>();
+  const [currentTimeIndex, setCurrentTimeIndex] = useState<number>();
 
   useEffect(() => {
     const fetchLocationData = async () => {
@@ -72,15 +72,15 @@ export default function Home() {
         //@ts-ignore next-line
         `https://api.open-meteo.com/v1/forecast?latitude=${locationData.lat}&longitude=${locationData.lng}&current=apparent_temperature,temperature_2m,surface_pressure,relative_humidity_2m,is_day,rain,snowfall,weather_code,wind_speed_10m,wind_direction_10m&hourly=surface_pressure,temperature_2m,rain,weather_code,visibility,relative_humidity_2m&daily=apparent_temperature_max,apparent_temperature_min,weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,wind_direction_10m_dominant,wind_speed_10m_max&timezone=auto`
       );
-      // console.log("data", data);
+      console.log("data", data);
       // console.log("current Hour", format(parseISO(data.current.time), "H"));
       setCurrentHour(format(parseISO(data.current.time), "H"));
       setHourlyTimeArray(data.hourly.time);
-      // setCurrentTimeIndex(
-      // hourlyTimeArray?.findIndex(
-      // (h) => format(parseISO(h), "H") === currentHour
-      // )
-      // );
+      setCurrentTimeIndex(
+        hourlyTimeArray?.findIndex(
+          (h) => format(parseISO(h), "H") === currentHour
+        )
+      );
       // console.log(currentHour);
       return data;
     },
@@ -98,6 +98,8 @@ export default function Home() {
   // console.log("This is the location Data", locationData);
 
   // console.log(currentHour, hourlyTimeArray);
+
+  console.log(currentTimeIndex);
 
   // console.log("Here is the SLICE", data.daily.time.slice(1, 4));
   return (
@@ -151,14 +153,35 @@ export default function Home() {
                         {format(parseISO(h), "h:mm a")}
                       </p>
                       <p className="whitespace-nowrap">
-                        {`${data.hourly.temperature_2m[i]}°C`}
+                        {`${
+                          data.hourly.temperature_2m[
+                            i +
+                              hourlyTimeArray.findIndex(
+                                (h) => format(parseISO(h), "H") === currentHour
+                              )
+                          ]
+                        }°C`}
                       </p>
                       <p>
                         {/* <WeatherIcon iconName={"fa-solid fa-sun"} /> */}
                         <WeatherIcon
                           iconStats={weatherCodeIcon(
-                            data.hourly.weather_code[i],
-                            isDayOrNight(data.hourly.time[i])
+                            data.hourly.weather_code[
+                              i +
+                                hourlyTimeArray.findIndex(
+                                  (h) =>
+                                    format(parseISO(h), "H") === currentHour
+                                )
+                            ],
+                            isDayOrNight(
+                              data.hourly.time[
+                                i +
+                                  hourlyTimeArray.findIndex(
+                                    (h) =>
+                                      format(parseISO(h), "H") === currentHour
+                                  )
+                              ]
+                            )
                           )}
                         />
                       </p>
